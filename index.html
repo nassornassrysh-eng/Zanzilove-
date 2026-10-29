@@ -1,35 +1,230 @@
-<!-- DIRISHA KAMILI LA SOGA (CHAT ROOM) -->
-<div id="chatRoomModal" class="hidden fixed inset-0 bg-white z-50 flex flex-col justify-between">
-    <!-- Header ya Juu ya Chat -->
-    <div class="bg-purple-700 text-white px-4 py-3 flex items-center justify-between shadow">
-        <div class="flex items-center space-x-3">
-            <button onclick="closeChatRoom()" class="text-white p-1">
-                <i data-lucide="arrow-left" class="w-6 h-6"></i>
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZanziLove - Penzi la Visiwani</title>
+    <!-- Tailwind CSS kwa Muonekano -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Icons za Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Firebase SDK (Mawasiliano ya Meseji Hewani) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="bg-gray-100 flex justify-center font-sans antialiased select-none">
+
+    <!-- Kontena Kuu la Simu -->
+    <div class="w-full max-w-md bg-white min-h-screen flex flex-col justify-between shadow-2xl relative">
+        
+        <!-- Header ya Juu -->
+        <header class="bg-purple-700 text-white px-5 py-3.5 flex justify-between items-center sticky top-0 z-40 shadow">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="heart" class="w-6 h-6 text-pink-300 fill-pink-300"></i>
+                <h1 class="text-xl font-extrabold tracking-wide">ZanziLove</h1>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="openMyProfileModal()" class="text-[11px] bg-purple-800 hover:bg-purple-900 px-3 py-1.5 rounded-full border border-purple-400 font-semibold">
+                    Wasifu Wangu
+                </button>
+            </div>
+        </header>
+
+        <!-- SEHEMU KUU ZA APP -->
+        <main class="flex-1 p-4 overflow-y-auto no-scrollbar pb-24">
+
+            <!-- 1. GUNDUA (DISCOVER FEED) -->
+            <section id="screen-discover" class="space-y-4">
+                <div id="card-area">
+                    <div class="text-center py-24 text-gray-400 space-y-2">
+                        <i data-lucide="loader" class="w-8 h-8 animate-spin mx-auto text-purple-600"></i>
+                        <p class="text-xs">Inatafuta watu walio karibu nawe...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. SOGA NA MECHI (CHAT LIST) -->
+            <section id="screen-matches" class="hidden space-y-4">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h2 class="text-lg font-bold text-purple-950">Mazungumzo (Soga)</h2>
+                    <span id="chat-count-badge" class="bg-purple-100 text-purple-700 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
+                </div>
+                
+                <div id="conversations-list" class="space-y-2">
+                    <!-- Orodha ya watu wa kuchati nao itaingia hapa -->
+                </div>
+            </section>
+
+            <!-- 3. PREMIUM (TSH 2,000) -->
+            <section id="screen-premium" class="hidden space-y-4">
+                <div class="bg-gradient-to-tr from-purple-800 to-indigo-900 text-white rounded-3xl p-6 shadow-lg text-center space-y-2">
+                    <span class="bg-yellow-400 text-purple-950 text-xs font-black px-3 py-1 rounded-full uppercase">ZanziLove VIP</span>
+                    <h3 class="text-2xl font-bold pt-2">ZanziLove Gold</h3>
+                    <div class="text-3xl font-extrabold text-yellow-300">TSh 2,000 <span class="text-xs text-white font-normal">/ Mwezi</span></div>
+                    <p class="text-xs text-purple-200">Chaji mara moja kwa mwezi uongee na watu bila kikomo!</p>
+                </div>
+
+                <div class="bg-white border border-purple-100 rounded-2xl p-4 shadow-sm space-y-3">
+                    <h4 class="font-bold text-xs text-purple-950">Namba ya Malipo (M-Pesa / TigoPesa):</h4>
+                    <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 text-center font-bold text-purple-900 text-lg tracking-wide">
+                        0621319981 - NASSOR
+                    </div>
+                    
+                    <a href="https://wa.me/255621319981?text=Habari%20Nassor,%20nimetuma%20TSh%202,000%20ya%20ZanziLove%20Premium" target="_blank" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-center text-xs shadow flex items-center justify-center space-x-2">
+                        <i data-lucide="message-square" class="w-4 h-4"></i>
+                        <span>💬 Thibitisha Malipo WhatsApp</span>
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <!-- Menyu ya Chini ya Simu -->
+        <nav class="bg-white border-t border-purple-100 px-6 py-2 flex justify-around items-center fixed bottom-0 w-full max-w-md z-40">
+            <button onclick="changeTab('discover')" id="nav-discover" class="flex flex-col items-center text-purple-700 font-bold">
+                <i data-lucide="flame" class="w-6 h-6"></i>
+                <span class="text-[10px] mt-1">Gundua</span>
             </button>
-            <div>
-                <h3 id="activeChatName" class="font-bold text-sm leading-tight">Juma Hassan</h3>
-                <p class="text-[10px] text-green-300">Yuko hewani (Online)</p>
+            <button onclick="changeTab('matches')" id="nav-matches" class="flex flex-col items-center text-gray-400">
+                <i data-lucide="message-circle" class="w-6 h-6"></i>
+                <span class="text-[10px] mt-1">Soga</span>
+            </button>
+            <button onclick="changeTab('premium')" id="nav-premium" class="flex flex-col items-center text-yellow-600 font-semibold">
+                <i data-lucide="crown" class="w-6 h-6"></i>
+                <span class="text-[10px] mt-1">Premium</span>
+            </button>
+        </nav>
+
+        <!-- DIRISHA LA KWANZA: USAJILI WA LAZIMA (SIGN UP) -->
+        <div id="registerModal" class="hidden fixed inset-0 bg-purple-950/95 z-50 flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
+                <div class="text-center">
+                    <h3 class="text-xl font-black text-purple-950">Karibu ZanziLove! ❤️</h3>
+                    <p class="text-xs text-gray-500 mt-1">Jaza fomu hii ili uanze kuona na kuchati na watu</p>
+                </div>
+
+                <div class="text-center space-y-2">
+                    <img id="reg-pic-preview" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-full mx-auto object-cover border-2 border-purple-600 shadow">
+                    <label class="cursor-pointer bg-purple-100 text-purple-700 text-xs px-3 py-1.5 rounded-full font-bold inline-block hover:bg-purple-200">
+                        Weka Picha Yako
+                        <input type="file" id="reg-pic-input" accept="image/*" class="hidden" onchange="processImageUpload(event)">
+                    </label>
+                </div>
+
+                <div class="space-y-2 text-xs">
+                    <div>
+                        <label class="font-bold text-gray-700">Jina Lako na Umri</label>
+                        <input id="reg-name" placeholder="mf. Asha, 22" class="w-full border rounded-xl px-3 py-2 mt-0.5 focus:outline-purple-600" required>
+                    </div>
+                    <div>
+                        <label class="font-bold text-gray-700">Eneo Unapoishi</label>
+                        <select id="reg-loc" class="w-full border rounded-xl px-3 py-2 mt-0.5 focus:outline-purple-600">
+                            <option>Stone Town, Zanzibar</option>
+                            <option>Nungwi, Zanzibar</option>
+                            <option>Paje, Zanzibar</option>
+                            <option>Chake Chake, Pemba</option>
+                            <option>Dar es Salaam</option>
+                            <option>Arusha / Mwanza</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-bold text-gray-700">Kuhusu Wewe (Bio)</label>
+                        <textarea id="reg-bio" rows="2" placeholder="Unapenda nini? mf. Safari, muziki, chakula cha asili..." class="w-full border rounded-xl px-3 py-2 mt-0.5 focus:outline-purple-600"></textarea>
+                    </div>
+                </div>
+
+                <button onclick="saveRegistration()" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-2xl shadow transition">
+                    Hifadhi & Anza Kutumia
+                </button>
             </div>
         </div>
-        <a id="whatsappChatLink" href="https://wa.me/255621319981" target="_blank" class="bg-green-500 hover:bg-green-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow flex items-center space-x-1">
-            <span>WhatsApp</span>
-        </a>
-    </div>
 
-    <!-- Sehemu ya Kusoma Meseji -->
-    <div id="chatMessagesBox" class="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50 text-xs">
-        <div class="flex justify-start">
-            <div class="bg-gray-200 text-gray-800 px-3.5 py-2.5 rounded-2xl max-w-[80%] shadow-sm">
-                Habari! Nimefurahi kuona tumeendana hapa ZanziLove. Uko sehemu gani leo?
+        <!-- DIRISHA LA CHAT YA MOJA KWA MOJA (LIVE CHAT ROOM KAMA WHATSAPP) -->
+        <div id="chatRoomModal" class="hidden fixed inset-0 bg-white z-50 flex flex-col justify-between">
+            <!-- Header ya Chat -->
+            <div class="bg-purple-700 text-white p-3.5 flex items-center justify-between shadow sticky top-0">
+                <div class="flex items-center space-x-3">
+                    <button onclick="closeChatRoom()" class="text-white hover:bg-purple-800 p-1 rounded-full">
+                        <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                    </button>
+                    <img id="chat-partner-pic" src="" class="w-9 h-9 rounded-full object-cover border border-white">
+                    <div>
+                        <h4 id="chat-partner-name" class="font-bold text-sm leading-tight">Jina</h4>
+                        <span class="text-[10px] text-green-300">Yuko Hewani (Online)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Eneo la Meseji Zinazotembea -->
+            <div id="messages-container" class="flex-1 p-4 overflow-y-auto space-y-2.5 bg-gray-50 text-xs">
+                <!-- Meseji zitaingia hapa moja kwa moja -->
+            </div>
+
+            <!-- Sanduku la Kuandika Meseji -->
+            <div class="p-3 border-t bg-white flex items-center space-x-2">
+                <input id="chat-input-text" type="text" placeholder="Andika ujumbe wako..." class="flex-1 border border-gray-300 rounded-full px-4 py-2.5 text-xs focus:outline-purple-600 focus:border-purple-600">
+                <button onclick="sendChatMessage()" class="bg-purple-700 hover:bg-purple-800 text-white p-2.5 rounded-full shadow">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
             </div>
         </div>
+
     </div>
 
-    <!-- Sehemu ya Chini ya Kuandika Meseji -->
-    <div class="p-3 bg-white border-t border-gray-200 flex items-center space-x-2">
-        <input id="chatMessageInput" type="text" placeholder="Andika ujumbe wako..." class="flex-1 border border-gray-300 rounded-full px-4 py-2.5 text-xs focus:outline-purple-600">
-        <button onclick="sendDirectMessage()" class="bg-purple-700 text-white p-2.5 rounded-full shadow hover:bg-purple-800">
-            <i data-lucide="send" class="w-4 h-4"></i>
-        </button>
-    </div>
-</div>
+    <!-- JAVASCRIPT & DATABASE ENGINE -->
+    <script>
+        // =========================================================================
+        // WEKA FULANI HAPA: Bandika Firebase Config Uliyopewa Kwenye Hatua ya Firebase
+        // =========================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-WEKA_HAPA",
+            authDomain: "zanzilove.firebaseapp.com",
+            databaseURL: "https://zanzilove-default-rtdb.firebaseio.com",
+            projectId: "zanzilove",
+            storageBucket: "zanzilove.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+
+        // Kuanzisha Firebase
+        let db = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        } catch (e) {
+            console.log("Firebase inangoja funguo sahihi.");
+        }
+
+        let myUser = JSON.parse(localStorage.getItem('zl_my_account')) || null;
+        let userPhotoBase64 = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80";
+        let liveUsersList = [];
+        let currentFeedIndex = 0;
+        let activePartner = null;
+        let chatMessagesRef = null;
+
+        window.onload = function() {
+            lucide.createIcons();
+            if (!myUser) {
+                document.getElementById('registerModal').classList.remove('hidden');
+            } else {
+                startApp();
+            }
+        };
+
+        // Finya Picha kutoka kwenye Simu ya Mkononi
+        function processImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 300;
+                        canvas.height = 300;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, 300, 300);

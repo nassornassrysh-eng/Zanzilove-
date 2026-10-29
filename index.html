@@ -3,104 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZanziLove - Pata Penzi Visiwani</title>
-    <!-- Tailwind CSS -->
+    <title>ZanziLove - Penzi la Visiwani</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        body { -webkit-tap-highlight-color: transparent; }
-        
-        /* Uhuishaji wa kadi ya Tinder */
-        .card-swipe-left {
-            transform: translateX(-150%) rotate(-25deg) !important;
-            opacity: 0;
-            transition: all 0.35s ease-out;
-        }
-        .card-swipe-right {
-            transform: translateX(150%) rotate(25deg) !important;
-            opacity: 0;
-            transition: all 0.35s ease-out;
-        }
-        .card-active {
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
     </style>
 </head>
-<body class="bg-gray-900 flex justify-center items-center min-h-screen font-sans antialiased select-none">
+<body class="bg-gray-100 flex justify-center font-sans antialiased">
 
-    <!-- Kontena Kuu la Simu ya Tinder -->
-    <div class="w-full max-w-md bg-white min-h-screen sm:min-h-[844px] sm:max-h-[844px] flex flex-col justify-between relative overflow-hidden sm:rounded-3xl shadow-2xl">
+    <!-- Kontena la Simu -->
+    <div class="w-full max-w-md bg-white min-h-screen flex flex-col justify-between shadow-2xl relative pb-20">
         
-        <!-- 1. HEADER YA JUU MTINDO WA TINDER -->
-        <header class="bg-white border-b border-gray-100 px-5 py-3 flex justify-between items-center z-30">
-            <!-- Profile Button -->
-            <button onclick="changeTab('profile')" id="hdr-btn-profile" class="p-1 rounded-full text-gray-400 hover:text-purple-700 transition">
-                <i data-lucide="user" class="w-7 h-7"></i>
-            </button>
-
-            <!-- ZanziLove Flame / Logo -->
-            <div class="flex items-center space-x-1 cursor-pointer" onclick="changeTab('discover')">
-                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-700 to-pink-500 flex items-center justify-center shadow-md">
-                    <i data-lucide="flame" class="w-5 h-5 text-white fill-white"></i>
-                </div>
-                <h1 class="text-2xl font-black bg-gradient-to-r from-purple-700 to-pink-600 bg-clip-text text-transparent tracking-tight">ZanziLove</h1>
+        <!-- Header -->
+        <header class="bg-purple-700 text-white px-5 py-4 flex justify-between items-center sticky top-0 z-40 shadow">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="heart" class="w-6 h-6 text-pink-300 fill-pink-300"></i>
+                <h1 class="text-xl font-black tracking-wide">ZanziLove</h1>
             </div>
-
-            <!-- Messages / Chat Button -->
-            <button onclick="changeTab('matches')" id="hdr-btn-chat" class="p-1 rounded-full text-gray-400 hover:text-purple-700 relative transition">
-                <i data-lucide="message-circle" class="w-7 h-7"></i>
-                <span id="chat-badge" class="hidden absolute top-0 right-0 w-2.5 h-2.5 bg-pink-500 rounded-full border-2 border-white"></span>
+            <button onclick="openProfile()" class="text-xs bg-purple-800 px-3 py-1.5 rounded-full border border-purple-400">
+                Wasifu Wangu
             </button>
         </header>
 
-        <!-- 2. MAUDHUI YA NDANI (SCREENS) -->
-        <main class="flex-1 relative overflow-hidden flex flex-col">
-
-            <!-- ================= SCREEN 1: TINDER SWIPE DISCOVER ================= -->
-            <section id="screen-discover" class="flex-1 flex flex-col justify-between p-3 relative">
-                
-                <!-- Eneo la Kadi ya Picha (Card Deck) -->
-                <div class="flex-1 relative flex items-center justify-center">
-                    <div id="card-stage" class="w-full h-[62vh] relative">
-                        <!-- Kadi ya Tinder itaingizwa hapa na JavaScript -->
-                    </div>
-                </div>
-
-                <!-- VITUFE VYA CHINI VYA TINDER (ACTION BUTTONS) -->
-                <div class="flex justify-center items-center space-x-4 py-2 z-20">
-                    <!-- Rewind / Rudia -->
-                    <button onclick="restartCards()" class="w-11 h-11 bg-white border border-yellow-200 rounded-full flex items-center justify-center text-yellow-500 shadow-md active:scale-90 transition">
-                        <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
-                    </button>
-
-                    <!-- Pass / Kataa (X) -->
-                    <button onclick="swipe('left')" class="w-16 h-16 bg-white border border-rose-200 rounded-full flex items-center justify-center text-rose-500 shadow-xl active:scale-90 transition hover:bg-rose-50">
-                        <i data-lucide="x" class="w-8 h-8 stroke-[3]"></i>
-                    </button>
-
-                    <!-- Super Like (Star) -->
-                    <button onclick="superLike()" class="w-11 h-11 bg-white border border-blue-200 rounded-full flex items-center justify-center text-blue-500 shadow-md active:scale-90 transition hover:bg-blue-50">
-                        <i data-lucide="star" class="w-5 h-5 fill-blue-500"></i>
-                    </button>
-
-                    <!-- Like / Penda (Heart) -->
-                    <button onclick="swipe('right')" class="w-16 h-16 bg-gradient-to-tr from-purple-700 to-pink-500 rounded-full flex items-center justify-center text-white shadow-xl active:scale-90 transition hover:opacity-95">
-                        <i data-lucide="heart" class="w-8 h-8 fill-white"></i>
-                    </button>
-
-                    <!-- Boost / Premium -->
-                    <button onclick="changeTab('premium')" class="w-11 h-11 bg-white border border-purple-200 rounded-full flex items-center justify-center text-purple-700 shadow-md active:scale-90 transition hover:bg-purple-50">
-                        <i data-lucide="zap" class="w-5 h-5 fill-purple-700"></i>
-                    </button>
+        <!-- Maudhui ya Ndani -->
+        <main class="flex-1 p-4 overflow-y-auto no-scrollbar">
+            
+            <!-- 1. GUNDUA (FEED) -->
+            <section id="screen-discover" class="space-y-4">
+                <div id="card-area">
+                    <!-- Kadi itaingia hapa -->
                 </div>
             </section>
 
-            <!-- ================= SCREEN 2: MECHI NA SOGA (TINDER CHAT) ================= -->
-            <section id="screen-matches" class="hidden flex-1 overflow-y-auto p-4 no-scrollbar space-y-4">
-                
-                <!-- Sehemu ya Juu: Mechi Mpya (New Matches Stories) -->
-                <div>
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Mechi Mpya
+            <!-- 2. SOGA NA MECHI (CHATS) -->
+            <section id="screen-matches" class="hidden space-y-4">
+                <h2 class="text-lg font-bold text-purple-950">Mazungumzo Yako</h2>
+                <div id="chats-list" class="space-y-2">
+                    <!-- Orodha ya soga itaingia hapa -->
+                </div>
+            </section>
+
+            <!-- 3. PREMIUM (TSH 2,000) -->
+            <section id="screen-premium" class="hidden space-y-4">
+                <div class="bg-gradient-to-tr from-purple-800 to-indigo-900 text-white rounded-3xl p-6 text-center space-y-2 shadow-lg">
+                    <span class="bg-yellow-400 text-purple-950 text-xs font-black px-3 py-1 rounded-full uppercase">ZanziLove VIP</span>
+                    <h3 class="text-2xl font-bold pt-2">ZanziLove Gold</h3>
+                    <div class="text-3xl font-extrabold text-yellow-300">TSh 2,000 <span class="text-xs text-white font-normal">/ Mwezi</span></div>
+                    <p class="text-xs text-purple-200">Ongea na watu bila kikomo na uone waliokupenda!</p>
+                </div>
+
+                <div class="bg-white border border-purple-100 rounded-2xl p-4 shadow-sm space-y-3">
+                    <h4 class="font-bold text-xs text-purple-950">Lipa kwa M-Pesa au TigoPesa:</h4>
+                    <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 text-center font-bold text-purple-900 text-base">
+                        0621319981 - NASSOR
+                    </div>
+                    
+                    <a href="https://wa.me/255621319981?text=Habari%20Nassor,%20nimetuma%20TSh%202,000%20ya%20ZanziLove%20Premium" target="_blank" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-center text-xs shadow">
+                        💬 Bonyeza Hapa Kuthibitisha WhatsApp
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <!-- Navigation ya Chini -->
+        <nav class="bg-white border-t border-purple-100 px-6 py-2 flex justify-around items-center fixed bottom-0 w-full max-w-md z-40">
+            <button onclick="changeTab('discover')" id="nav-discover" class="flex flex-col items-center text-purple-700 font-bold">
+                <i data-lucide="flame" class="w-6 h-6"></i>
+                <span class="text-[10px] mt-1">Gundua</span>
+            </button>
+            <button onclick="changeTab('matches')" id="nav-matches" class="flex flex-col items-center text-gray-400">
+                <i data-lucide="message-circle" class="w-6 h-6"></i>
+                <span class="text-[10px] mt-1">Soga</span>
+            </button>
+            <button onclick="changeTab('premium')" id="nav-premium" class="flex flex-col items-center text-yellow-600 font-semibold">
+                <i data-lucide="crown" class="w-6 h-6"></i>
+                <span class="text-[10px] mt-1">Premium</span>
+            </button>
+        </nav>
+
+        <!-- MODAL: WASIFU / KUJISAJILI -->
+        <div id="profileModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-3xl p-5 space-y-3 shadow-2xl">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h3 class="font-bold text-purple-950">Wasifu Wako</h3>
+                    <button onclick="closeProfile()" class="text-gray-400 font-bold">X</button>
+                </div>
+                <div class="text-center space-y-2">
+                    <img id="user-pic-preview" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-full mx-auto object-cover border-2 border-purple-600">
+                    <label class="cursor-pointer bg-purple-100 text-purple-700 text-xs px-3 py-1.5 rounded-full font-bold inline-block">
+                        Chagua Picha Simuni
+                        <input type="file" accept="image/*" class="hidden" onchange="uploadImage(event)">
+                    </label>
+                </div>
+                <div class="space-y-2 text-xs">
+                    <div>
+                        <label class="font-bold text-gray-700">Jina na Umri</label>
+                        <input id="inp-name" class="w-full border rounded-xl px-3 py-2 mt-0.5" value="Asha, 23">
+                    </div>
+                    <div>
+                        <label class="font-bold text-gray-700">Eneo Lako</label>
+                        <select id="inp-loc" class="w-full border rounded-xl px-3 py-2 mt-0.5">
+                            <option>Stone Town, Zanzibar</option>
+                            <option>Nungwi, Zanzibar</option>
+                            <option>Paje, Zanzibar</option>
+                            <option>Pemba</option>
+                            <option>Dar es Salaam</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-bold text-gray-700">Bio</label>
+                        <textarea id="inp-bio" rows="2" class="w-full border rounded-xl px-3 py-2 mt-0.5">Napenda matembezi ya jioni Forodhani na kusafiri.</textarea>
+                    </div>
+                </div>
+                <button onclick="saveProfile()" class="w-full bg-purple-700 text-white font-bold py-2.5 rounded-xl shadow">
+                    Hifadhi Wasifu
+                </button>
+            </div>
+        </div>
+
+        <!-- MODAL YA KUCHATI (CHAT ROOM) -->
+        <div id="chatRoomModal" class="hidden fixed inset-0 bg-white z-50 flex flex-col justify-between">
+            <div class="bg-purple-700 text-white p-4 flex items-center justify-between shadow">
+                <div class="flex items-center space-x-3">
+                    <button onclick="closeChatRoom()" class="text-white">
+                        <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                    </button>
+                    <img id="chat-user-img" src="" class="w-9 h-9 rounded-full object-cover border border-white">
+                    <div>
+                        <h4 id="chat-user-name" class="font-bold text-sm">Jina</h4>
+                        <span class="text-[10px] text-green-300">Yuko mtandaoni</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Eneo la Meseji -->
+            <div id="chat-msgs-box" class="flex-1 p-4 overflow-y-auto space-y-2 text-xs bg-gray-50">
+                <!-- Meseji zitaingia hapa -->
+            </div>
+
+            <!-- Sanduku la Kuandika -->
+            <div class="p-3 border-t bg-white flex space-x-2">
+                <input id="chat-msg-input" placeholder="Andika ujumbe wako..." class="flex-1 border rounded-full px-4 py-2 text-xs focus:outline-purple-600">
+                <button onclick="sendMsg()" class="bg-purple-700 text-white p-2.5 rounded-full">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Data za Wasifu wa Mfano
+        const profiles = [
+            { id: 1, name: "Zuhura, 22", loc: "Stone Town, Zanzibar", bio: "Napenda upepo wa bahari, kahawa ya Forodhani na utulivu.", pic: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80" },
+            { id: 2, name: "Salum, 26", loc: "Nungwi, Zanzibar", bio: "Nahodha wa mashua na mpishi mzuri wa samaki wa kuchoma.", pic: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80" },
+            { id: 3, name: "Farida, 24", loc: "Paje, Zanzibar", bio: "Napenda kutembea ufukweni, kuogelea na marafiki wa kweli.", pic: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80" },
+            { id: 4, name: "Ali, 28", loc: "Dar es Salaam", bio: "Mfanyabiashara. Natafuta rafiki wa kuanzisha naye maisha.", pic: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80" }
+        ];
+
+        let currentIndex = 0;
+        let matchedUsers = JSON.parse(localStorage.getItem('zl_matches')) || [profiles[0]];
+        let currentChatPartner = null;
+        let chatHistories = JSON.parse(localStorage.getItem('zl_chats')) || {};
+
+        window.onload = function() {
+            lucide.createIcons();
+            renderFeed();
+            renderChats();
+        };
+
+        function changeTab(tab) {
+            ['discover', 'matches', 'premium'].forEach(t => {
+                document.getElementById(`screen-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).classList.replace('text-purple-700', 'text-gray-400');
+            });
+            document.getElementById(`screen-${tab}`).classList.remove('hidden');
+            document.getElementById(`nav-${tab}`).classList.replace('text-gray-400', 'text-purple-700');
+            if (tab === 'matches') renderChats();
+            lucide.createIcons();
+        }
+
+        function renderFeed() {
+            const area = document.getElementById('card-area');
+            if (currentIndex >= profiles.length) {
+                area.innerHTML = `
+                    <div class="text-center py-20 space-y-3">
+                        <i data-lucide="check" class="w-12 h-12 text-purple-700 mx-auto"></i>
+                        <h4 class="font-bold text-gray-800">Umemaliza Wasifu Wote!</h4>
+                        <button onclick="currentIndex = 0; renderFeed()" class="bg-purple-700 text-white text-xs px-4 py-2 rounded-xl">Anza Upya</button>
+                    </div>
+                `;
+                lucide.createIcons();
+                retur

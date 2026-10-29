@@ -1,10 +1,18 @@
 <!DOCTYPE html>
-<!-- KODI MPYA: FIREBASE IMEUNGANISHWA RASMI -->
+<!-- KODI YENYE MFUMO WA KUSAMBAZA MITANDAONI (SHARE) -->
 <html lang="sw">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ZanziLove - Penzi la Visiwani</title>
+    
+    <!-- Meta Tags za Kutengeneza Picha na Maelezo WhatsApp & Facebook -->
+    <meta property="og:title" content="ZanziLove - Penzi la Visiwani Zanzibar & Bara">
+    <meta property="og:description" content="Jiunge sasa bure kuona wachumba na kuanza kuchat moja kwa moja!">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80">
+    <meta property="og:url" content="https://nassornassrysh-eng.github.io/Zanzilove-/">
+    <meta property="og:type" content="website">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Firebase SDK -->
@@ -19,15 +27,22 @@
 
     <div class="w-full max-w-md bg-white min-h-screen flex flex-col justify-between shadow-2xl relative">
         
-        <!-- Header -->
-        <header class="bg-purple-700 text-white px-5 py-3.5 flex justify-between items-center sticky top-0 z-40 shadow">
-            <div class="flex items-center space-x-2">
+        <!-- Header yenye Kitufe cha Sambaza -->
+        <header class="bg-purple-700 text-white px-4 py-3.5 flex justify-between items-center sticky top-0 z-40 shadow">
+            <div class="flex items-center space-x-1.5">
                 <i data-lucide="heart" class="w-6 h-6 text-pink-300 fill-pink-300"></i>
                 <h1 class="text-xl font-black tracking-wide">ZanziLove</h1>
             </div>
-            <button onclick="logout()" class="text-[11px] bg-purple-800 hover:bg-purple-900 px-3 py-1 rounded-full border border-purple-400">
-                Toka (Logout)
-            </button>
+            <div class="flex items-center space-x-1.5">
+                <!-- Kitufe cha Kurusha Mitandaoni -->
+                <button onclick="shareApp()" class="text-[11px] bg-purple-600 hover:bg-purple-800 text-white px-2.5 py-1 rounded-full border border-purple-400 flex items-center space-x-1 shadow-sm">
+                    <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                    <span>Sambaza</span>
+                </button>
+                <button onclick="logout()" class="text-[11px] bg-purple-900 hover:bg-black text-white px-2.5 py-1 rounded-full border border-purple-500">
+                    Toka
+                </button>
+            </div>
         </header>
 
         <!-- MAUDHUI -->
@@ -60,9 +75,9 @@
                 <div class="bg-white border border-purple-100 rounded-2xl p-4 shadow-sm space-y-3">
                     <h4 class="font-bold text-xs text-purple-950">Namba ya Malipo (M-Pesa / TigoPesa):</h4>
                     <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 text-center font-bold text-purple-900 text-base">
-                        0621319981 - NASSOR
+                        06*******kwa sasa ni bure ipo kwenye test
                     </div>
-                    <a href="https://wa.me/255621319981?text=Habari%20Nassor,%20nimetuma%20TSh%202000%20ya%20ZanziLove" target="_blank" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-center text-xs shadow">
+                    <a href="https://wa.me/2556*********?text=Habari%20Nassor,%20nimetuma%20TSh%202000%20ya%20ZanziLove" target="_blank" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-center text-xs shadow">
                         💬 Thibitisha Malipo WhatsApp
                     </a>
                 </div>
@@ -85,7 +100,7 @@
             </button>
         </nav>
 
-        <!-- FOMU YA LAZIMA YA KUJISAJILI KWA WAPYA -->
+        <!-- FOMU YA LAZIMA YA KUJISAJILI -->
         <div id="registerModal" class="hidden fixed inset-0 bg-purple-950/95 z-50 flex items-center justify-center p-4">
             <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
                 <div class="text-center">
@@ -155,7 +170,7 @@
 
     </div>
 
-    <!-- FIREBASE YA NASSOR -->
+    <!-- LOGIC YA JAVASCRIPT & SHARE -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBTwz-oDGQJAw44k3X_cm06Sviw6ASuQC0",
@@ -184,6 +199,22 @@
                 listenToMatches();
             }
         };
+
+        // Kazi ya Kusambaza Kwenye WhatsApp / Facebook / Mitandao
+        function shareApp() {
+            const shareData = {
+                title: 'ZanziLove - Penzi la Visiwani',
+                text: '🔥 Njoo upate mpenzi au mchumba huku Zanzibar na Tanzania nzima! Jiunge sasa bure:',
+                url: 'https://nassornassrysh-eng.github.io/Zanzilove-/'
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(shareData.url);
+                alert("Link ya ZanziLove imenakiliwa! Sasa unaweza kuipaste WhatsApp au Facebook.");
+            }
+        }
 
         function handlePicUpload(e) {
             const file = e.target.files[0];

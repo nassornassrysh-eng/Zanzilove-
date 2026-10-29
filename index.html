@@ -1,253 +1,284 @@
 <!DOCTYPE html>
+<!-- KODI MPYA: FIREBASE IMEUNGANISHWA RASMI -->
 <html lang="sw">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ZanziLove - Penzi la Visiwani</title>
-    <!-- Tailwind CSS kwa Muonekano -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        body { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
 <body class="bg-gray-100 flex justify-center font-sans antialiased select-none">
 
-    <!-- Kontena la App ya Simu -->
-    <div class="w-full max-w-md bg-white min-h-screen flex flex-col justify-between shadow-xl relative pb-20">
+    <div class="w-full max-w-md bg-white min-h-screen flex flex-col justify-between shadow-2xl relative">
         
-        <!-- Header ya Juu -->
-        <header class="bg-purple-700 text-white px-5 py-4 flex justify-between items-center sticky top-0 z-40 shadow">
+        <!-- Header -->
+        <header class="bg-purple-700 text-white px-5 py-3.5 flex justify-between items-center sticky top-0 z-40 shadow">
             <div class="flex items-center space-x-2">
-                <i data-lucide="heart" class="w-7 h-7 text-pink-300 fill-pink-300"></i>
-                <h1 class="text-2xl font-extrabold tracking-wide">ZanziLove</h1>
+                <i data-lucide="heart" class="w-6 h-6 text-pink-300 fill-pink-300"></i>
+                <h1 class="text-xl font-black tracking-wide">ZanziLove</h1>
             </div>
-            <button onclick="openProfileModal()" class="text-xs bg-purple-800 hover:bg-purple-900 px-3 py-1.5 rounded-full border border-purple-400">
-                Wasifu Wangu
+            <button onclick="logout()" class="text-[11px] bg-purple-800 hover:bg-purple-900 px-3 py-1 rounded-full border border-purple-400">
+                Toka (Logout)
             </button>
         </header>
 
-        <!-- Sehemu Kuu (Screens) -->
-        <main class="flex-1 p-4 overflow-y-auto no-scrollbar">
-            
-            <!-- 1. GUNDUA (SWIPE / FEED) -->
+        <!-- MAUDHUI -->
+        <main class="flex-1 p-4 overflow-y-auto no-scrollbar pb-24">
+
+            <!-- 1. GUNDUA -->
             <section id="screen-discover" class="space-y-4">
                 <div id="card-area">
-                    <!-- Kadi itaingizwa hapa na JS -->
-                </div>
-            </section>
-
-            <!-- 2. WALIONIPENDA (WHO LIKED ME) -->
-            <section id="screen-likes" class="hidden space-y-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-purple-950">Waliokupenda</h2>
-                    <span id="likes-count-badge" class="bg-purple-100 text-purple-700 text-xs px-2.5 py-1 rounded-full font-bold">0 Watu</span>
-                </div>
-
-                <!-- Ikiwa hajalipia Premium -->
-                <div id="likes-locked-view" class="bg-purple-50 border-2 border-dashed border-purple-200 rounded-3xl p-6 text-center space-y-4">
-                    <div class="w-16 h-16 bg-purple-200 text-purple-800 rounded-full flex items-center justify-center mx-auto">
-                        <i data-lucide="lock" class="w-8 h-8"></i>
+                    <div class="text-center py-24 text-gray-400">
+                        <i data-lucide="loader" class="w-8 h-8 animate-spin mx-auto text-purple-600 mb-2"></i>
+                        <p class="text-xs">Inapakia watu waliojisajili...</p>
                     </div>
-                    <h3 class="font-bold text-lg text-purple-950">Ukurasa Huu Umefungwa</h3>
-                    <p class="text-sm text-gray-600">Kuna watu wamependezwa nawe Zanzibar na Tanzania nzima! Jiunge na Premium kwa TSh 2,000 kuwafungua.</p>
-                    <button onclick="changeTab('premium')" class="w-full bg-purple-700 text-white font-bold py-3 rounded-2xl shadow hover:bg-purple-800">
-                        Lipia TSh 2,000 Uwaone
-                    </button>
-                </div>
-
-                <!-- Ikiwa amelipia Premium -->
-                <div id="likes-unlocked-view" class="hidden grid grid-cols-2 gap-3">
-                    <!-- Orodha ya waliopenda -->
                 </div>
             </section>
 
-            <!-- 3. MECHI ZAKO (MATCHES & CHAT) -->
+            <!-- 2. SOGA NA MECHI -->
             <section id="screen-matches" class="hidden space-y-4">
-                <h2 class="text-xl font-bold text-purple-950">Mechi Zako</h2>
-                <div id="matches-container" class="space-y-3">
-                    <!-- Mechi zitaonekana hapa -->
-                </div>
+                <h2 class="text-lg font-bold text-purple-950">Meseji & Mechi Zako</h2>
+                <div id="matches-list" class="space-y-2"></div>
             </section>
 
-            <!-- 4. UKURASA WA PREMIUM -->
+            <!-- 3. PREMIUM -->
             <section id="screen-premium" class="hidden space-y-4">
-                <div class="bg-gradient-to-tr from-purple-800 to-indigo-900 text-white rounded-3xl p-6 shadow-lg text-center space-y-2">
-                    <span class="bg-yellow-400 text-purple-950 text-xs font-black px-3 py-1 rounded-full uppercase">ZanziLove Gold</span>
-                    <h3 class="text-2xl font-bold pt-2">Ona Wanaokupenda</h3>
-                    <div class="text-3xl font-extrabold text-yellow-300">TSh 2,000 <span class="text-xs text-white font-normal">/ Mwezi</span></div>
+                <div class="bg-gradient-to-tr from-purple-800 to-indigo-900 text-white rounded-3xl p-5 text-center space-y-2">
+                    <span class="bg-yellow-400 text-purple-950 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">ZanziLove Gold</span>
+                    <h3 class="text-xl font-bold">Ona Wanaokupenda</h3>
+                    <div class="text-2xl font-extrabold text-yellow-300">TSh 2,000 <span class="text-xs text-white font-normal">/ Mwezi</span></div>
                 </div>
 
                 <div class="bg-white border border-purple-100 rounded-2xl p-4 shadow-sm space-y-3">
-                    <h4 class="font-bold text-sm text-purple-950">Jinsi ya Kulipia:</h4>
-                    <p class="text-xs text-gray-600">Tuma TSh 2,000 kwenye namba hii ya M-Pesa / TigoPesa:</p>
-                    <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 font-mono text-center font-bold text-purple-800 text-base">
-                    0776028281(nassor maaoud sinani)
+                    <h4 class="font-bold text-xs text-purple-950">Namba ya Malipo (M-Pesa / TigoPesa):</h4>
+                    <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 text-center font-bold text-purple-900 text-base">
+                        0621319981 - NASSOR
                     </div>
-                    
-                    <div class="pt-2 space-y-2">
-                        <label class="text-xs font-semibold text-gray-700">Weka Nambari ya Muamala uliotumiwa:</label>
-                        <input id="mpesa-code" type="text" placeholder="mf. QK89..." class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-purple-600 uppercase">
-                        <button onclick="submitPayment()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-purple-950 font-extrabold py-3 rounded-xl shadow">
-                            Thibitisha Malipo ya TSh 2,000
-                        </button>
-                    </div>
+                    <a href="https://wa.me/255621319981?text=Habari%20Nassor,%20nimetuma%20TSh%202000%20ya%20ZanziLove" target="_blank" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-center text-xs shadow">
+                        💬 Thibitisha Malipo WhatsApp
+                    </a>
                 </div>
             </section>
         </main>
 
-        <!-- Navigation ya Chini ya Simu -->
-        <nav class="bg-white border-t border-purple-100 px-4 py-2 flex justify-between items-center fixed bottom-0 w-full max-w-md z-40">
-            <button onclick="changeTab('discover')" id="nav-btn-discover" class="flex flex-col items-center text-purple-700 font-bold">
+        <!-- Navigation Bar -->
+        <nav class="bg-white border-t border-purple-100 px-6 py-2 flex justify-around items-center fixed bottom-0 w-full max-w-md z-40">
+            <button onclick="changeTab('discover')" id="nav-discover" class="flex flex-col items-center text-purple-700 font-bold">
                 <i data-lucide="flame" class="w-6 h-6"></i>
                 <span class="text-[10px] mt-1">Gundua</span>
             </button>
-            <button onclick="changeTab('likes')" id="nav-btn-likes" class="flex flex-col items-center text-gray-400">
-                <i data-lucide="heart" class="w-6 h-6"></i>
-                <span class="text-[10px] mt-1">Walionipenda</span>
-            </button>
-            <button onclick="changeTab('matches')" id="nav-btn-matches" class="flex flex-col items-center text-gray-400">
+            <button onclick="changeTab('matches')" id="nav-matches" class="flex flex-col items-center text-gray-400">
                 <i data-lucide="message-circle" class="w-6 h-6"></i>
-                <span class="text-[10px] mt-1">Mechi</span>
+                <span class="text-[10px] mt-1">Soga (Chat)</span>
             </button>
-            <button onclick="changeTab('premium')" id="nav-btn-premium" class="flex flex-col items-center text-yellow-600 font-semibold">
+            <button onclick="changeTab('premium')" id="nav-premium" class="flex flex-col items-center text-yellow-600 font-semibold">
                 <i data-lucide="crown" class="w-6 h-6"></i>
                 <span class="text-[10px] mt-1">Premium</span>
             </button>
         </nav>
 
-        <!-- MODAL YA PROFILE: CHAGUA PICHA KUTOKA SIMUNI -->
-        <div id="profileModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-xs rounded-3xl p-5 space-y-4 shadow-2xl">
-                <div class="flex justify-between items-center">
-                    <h3 class="font-bold text-lg text-purple-950">Wasifu Wako</h3>
-                    <button onclick="closeProfileModal()" class="text-gray-400"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <!-- FOMU YA LAZIMA YA KUJISAJILI KWA WAPYA -->
+        <div id="registerModal" class="hidden fixed inset-0 bg-purple-950/95 z-50 flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
+                <div class="text-center">
+                    <h3 class="text-xl font-black text-purple-950">Karibu ZanziLove!</h3>
+                    <p class="text-xs text-gray-500 mt-1">Weka taarifa zako kuanza kuonana na wengine</p>
                 </div>
 
                 <div class="text-center space-y-2">
-                    <img id="my-pic-preview" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" class="w-20 h-20 rounded-full mx-auto object-cover border-2 border-purple-600">
-                    <label class="cursor-pointer bg-purple-100 text-purple-700 text-xs px-3 py-1.5 rounded-full font-semibold inline-block">
-                        Badili Picha kutoka Simuni
-                        <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="previewImage(event)">
+                    <img id="reg-pic-preview" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-full mx-auto object-cover border-2 border-purple-600 shadow">
+                    <label class="cursor-pointer bg-purple-100 text-purple-700 text-xs px-3 py-1.5 rounded-full font-bold inline-block">
+                        Chagua Picha kutoka Simuni
+                        <input type="file" id="reg-pic-input" accept="image/*" class="hidden" onchange="handlePicUpload(event)">
                     </label>
                 </div>
 
-                <div class="space-y-2">
+                <div class="space-y-2 text-xs">
                     <div>
-                        <label class="text-xs font-semibold text-gray-600">Jina na Umri</label>
-                        <input id="user-name" class="w-full border rounded-xl px-3 py-1.5 text-sm" value="Fatma, 22">
+                        <label class="font-bold text-gray-700">Jina Lako Kamili</label>
+                        <input id="reg-name" placeholder="mf. Asha au Rashid" class="w-full border rounded-xl px-3 py-2 mt-0.5 focus:outline-purple-600" required>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="font-bold text-gray-700">Umri</label>
+                            <input id="reg-age" type="number" placeholder="mf. 23" class="w-full border rounded-xl px-3 py-2 mt-0.5 focus:outline-purple-600" required>
+                        </div>
+                        <div>
+                            <label class="font-bold text-gray-700">Eneo Lako</label>
+                            <select id="reg-loc" class="w-full border rounded-xl px-2 py-2 mt-0.5 focus:outline-purple-600">
+                                <option>Stone Town, Zanzibar</option>
+                                <option>Nungwi, Zanzibar</option>
+                                <option>Paje, Zanzibar</option>
+                                <option>Chake Chake, Pemba</option>
+                                <option>Dar es Salaam</option>
+                            </select>
+                        </div>
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-gray-600">Eneo Lako</label>
-                        <select id="user-loc" class="w-full border rounded-xl px-3 py-1.5 text-sm">
-                            <option>Stone Town, Zanzibar</option>
-                            <option>Nungwi, Zanzibar</option>
-                            <option>Paje, Zanzibar</option>
-                            <option>Michenzani, Zanzibar</option>
-                            <option>Dar es Salaam</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-gray-600">Bio (Kuhusu Wewe)</label>
-                        <textarea id="user-bio" rows="2" class="w-full border rounded-xl px-3 py-1.5 text-sm">Napenda matembezi ya ufukweni Forodhani.</textarea>
+                        <label class="font-bold text-gray-700">Kuhusu Wewe (Bio)</label>
+                        <textarea id="reg-bio" rows="2" placeholder="Unapenda nini?" class="w-full border rounded-xl px-3 py-2 mt-0.5 focus:outline-purple-600"></textarea>
                     </div>
                 </div>
 
-                <button onclick="saveUserProfile()" class="w-full bg-purple-700 text-white font-bold py-2.5 rounded-xl">
-                    Hifadhi Wasifu
+                <button onclick="registerUser()" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-2xl shadow transition">
+                    Jiunge Sasa Bure
                 </button>
             </div>
         </div>
 
-        <!-- MODAL YA MATCH (IKIPATIKANA) -->
-        <div id="matchModal" class="hidden fixed inset-0 bg-purple-950/90 z-50 flex items-center justify-center p-6 text-center text-white">
-            <div class="space-y-4 max-w-xs">
-                <i data-lucide="sparkles" class="w-16 h-16 text-yellow-300 mx-auto"></i>
-                <h3 class="text-2xl font-black">Hongera! Ni Mechi!</h3>
-                <p id="match-msg" class="text-sm text-purple-200">Mmeendana! Mnaweza kuanza soga sasa hivi.</p>
-                <button onclick="closeMatchModal()" class="w-full bg-yellow-400 text-purple-950 font-bold py-3 rounded-2xl">
-                    Sawa, Endelea
+        <!-- CHAT ROOM -->
+        <div id="chatModal" class="hidden fixed inset-0 bg-white z-50 flex flex-col justify-between">
+            <div class="bg-purple-700 text-white p-4 flex items-center justify-between shadow">
+                <div class="flex items-center space-x-3">
+                    <button onclick="closeChat()" class="text-white"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+                    <span id="chat-partner-name" class="font-bold text-base">Chat</span>
+                </div>
+            </div>
+
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-2 text-xs"></div>
+
+            <div class="p-3 border-t flex space-x-2 bg-gray-50">
+                <input id="chat-input" placeholder="Andika ujumbe wako..." class="flex-1 border rounded-full px-4 py-2 text-xs focus:outline-purple-600">
+                <button onclick="sendChatMessage()" class="bg-purple-700 text-white p-2.5 rounded-full">
+                    <i data-lucide="send" class="w-4 h-4"></i>
                 </button>
             </div>
         </div>
 
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- FIREBASE YA NASSOR -->
     <script>
-        // Data za Majaribio (Initial Profiles)
-        const sampleProfiles = [
-            { id: 1, name: "Amina, 23", location: "Stone Town, Zanzibar", bio: "Napenda upepo wa bahari, kahawa ya tangawizi na utulivu.", pic: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80", likesYou: true },
-            { id: 2, name: "Salum, 26", location: "Nungwi, Zanzibar", bio: "Mzamiaji baharini (diver) na mpishi wa samaki wa kuchoma.", pic: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80", likesYou: true },
-            { id: 3, name: "Rehema, 21", location: "Paje, Zanzibar", bio: "Kite-surfing na safari za vijijini. Natafuta rafiki wa kweli.", pic: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80", likesYou: false },
-            { id: 4, name: "Juma, 28", location: "Dar es Salaam", bio: "Mhandisi. Mara kwa mara niko Unguja kikazi.", pic: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80", likesYou: true }
-        ];
-
-        let currentIndex = 0;
-        let isPremium = JSON.parse(localStorage.getItem('zl_premium')) || false;
-        let matches = JSON.parse(localStorage.getItem('zl_matches')) || [];
-        let myProfile = JSON.parse(localStorage.getItem('zl_profile')) || {
-            name: "Fatma, 22",
-            location: "Stone Town, Zanzibar",
-            bio: "Napenda matembezi ya ufukweni Forodhani.",
-            pic: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80"
+        const firebaseConfig = {
+            apiKey: "AIzaSyBTwz-oDGQJAw44k3X_cm06Sviw6ASuQC0",
+            authDomain: "zanzilove-f4880.firebaseapp.com",
+            databaseURL: "https://zanzilove-f4880-default-rtdb.firebaseio.com",
+            projectId: "zanzilove-f4880",
+            storageBucket: "zanzilove-f4880.firebasestorage.app",
+            messagingSenderId: "330828885655",
+            appId: "1:330828885655:web:0aa57141f605f9d420c3d2"
         };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let currentUser = JSON.parse(localStorage.getItem('zl_active_user')) || null;
+        let allUsers = [];
+        let currentIndex = 0;
+        let compressedPic = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80";
 
         window.onload = function() {
             lucide.createIcons();
-            loadProfileCard();
-            updateLikesView();
-            updateMatchesView();
+            if (!currentUser) {
+                document.getElementById('registerModal').classList.remove('hidden');
+            } else {
+                fetchUsersFromCloud();
+                listenToMatches();
+            }
         };
 
-        function changeTab(tab) {
-            ['discover', 'likes', 'matches', 'premium'].forEach(t => {
-                document.getElementById(`screen-${t}`).classList.add('hidden');
-                document.getElementById(`nav-btn-${t}`).classList.replace('text-purple-700', 'text-gray-400');
-                document.getElementById(`nav-btn-${t}`).classList.remove('font-bold');
-            });
-
-            document.getElementById(`screen-${tab}`).classList.remove('hidden');
-            document.getElementById(`nav-btn-${tab}`).classList.replace('text-gray-400', 'text-purple-700');
-            document.getElementById(`nav-btn-${tab}`).classList.add('font-bold');
-            
-            if (tab === 'likes') updateLikesView();
-            if (tab === 'matches') updateMatchesView();
-            lucide.createIcons();
+        function handlePicUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 250;
+                        canvas.height = 250;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, 250, 250);
+                        compressedPic = canvas.toDataURL('image/jpeg', 0.5);
+                        document.getElementById('reg-pic-preview').src = compressedPic;
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
-        function loadProfileCard() {
+        function registerUser() {
+            const name = document.getElementById('reg-name').value.trim();
+            const age = document.getElementById('reg-age').value.trim();
+            const loc = document.getElementById('reg-loc').value;
+            const bio = document.getElementById('reg-bio').value.trim();
+
+            if (!name || !age) {
+                alert("Tafadhali jaza jina na umri wako!");
+                return;
+            }
+
+            const userId = 'user_' + Date.now();
+            currentUser = {
+                id: userId,
+                name: `${name}, ${age}`,
+                location: loc,
+                bio: bio || "Niko ZanziLove kutafuta mchumba.",
+                pic: compressedPic
+            };
+
+            localStorage.setItem('zl_active_user', JSON.stringify(currentUser));
+            db.ref('users/' + userId).set(currentUser);
+
+            document.getElementById('registerModal').classList.add('hidden');
+            fetchUsersFromCloud();
+            listenToMatches();
+        }
+
+        function fetchUsersFromCloud() {
+            db.ref('users').on('value', (snapshot) => {
+                const data = snapshot.val();
+                allUsers = [];
+                if (data) {
+                    for (let id in data) {
+                        if (id !== currentUser.id) {
+                            allUsers.push(data[id]);
+                        }
+                    }
+                }
+                renderDiscoverCard();
+            });
+        }
+
+        function renderDiscoverCard() {
             const area = document.getElementById('card-area');
-            if (currentIndex >= sampleProfiles.length) {
+            if (allUsers.length === 0 || currentIndex >= allUsers.length) {
                 area.innerHTML = `
                     <div class="text-center py-20 space-y-3">
-                        <i data-lucide="check" class="w-12 h-12 text-purple-700 mx-auto"></i>
-                        <h4 class="font-bold text-gray-800">Umemaliza Wasifu Wote!</h4>
-                        <button onclick="currentIndex = 0; loadProfileCard()" class="bg-purple-700 text-white text-xs px-4 py-2 rounded-xl">Anza Upya</button>
+                        <i data-lucide="users" class="w-12 h-12 text-purple-700 mx-auto"></i>
+                        <h4 class="font-bold text-gray-800">Hakuna Watu Wapya Sasa!</h4>
+                        <p class="text-xs text-gray-400">Watu wengine wakijisajili kwenye simu zao watatokea hapa mara moja.</p>
+                        <button onclick="currentIndex = 0; renderDiscoverCard()" class="bg-purple-700 text-white text-xs px-4 py-2 rounded-xl">Angalia Tena</button>
                     </div>
                 `;
                 lucide.createIcons();
                 return;
             }
 
-            const p = sampleProfiles[currentIndex];
+            const p = allUsers[currentIndex];
             area.innerHTML = `
                 <div class="rounded-3xl overflow-hidden shadow-lg border border-purple-100 relative bg-white">
                     <img src="${p.pic}" class="w-full h-96 object-cover">
                     <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-4 text-white">
-                        <h3 class="text-2xl font-extrabold">${p.name}</h3>
+                        <h3 class="text-2xl font-black">${p.name}</h3>
                         <p class="text-xs text-purple-200 mt-1">${p.location}</p>
                         <p class="text-xs text-gray-200 mt-2">${p.bio}</p>
                     </div>
                 </div>
                 <div class="flex justify-center space-x-6 mt-5">
-                    <button onclick="passAction()" class="w-14 h-14 bg-white border border-gray-200 rounded-full flex items-center justify-center text-red-500 shadow hover:bg-gray-50">
+                    <button onclick="currentIndex++; renderDiscoverCard()" class="w-14 h-14 bg-white border rounded-full flex items-center justify-center text-red-500 shadow hover:bg-gray-50">
                         <i data-lucide="x" class="w-7 h-7"></i>
                     </button>
-                    <button onclick="likeAction()" class="w-16 h-16 bg-purple-700 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-purple-800">
+                    <button onclick="likeUser('${p.id}', '${p.name}', '${p.pic}')" class="w-16 h-16 bg-purple-700 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-purple-800">
                         <i data-lucide="heart" class="w-8 h-8 fill-current"></i>
                     </button>
                 </div>
@@ -255,114 +286,120 @@
             lucide.createIcons();
         }
 
-        function passAction() {
+        function likeUser(targetId, targetName, targetPic) {
+            db.ref(`likes/${targetId}/${currentUser.id}`).set(true);
+
+            db.ref(`likes/${currentUser.id}/${targetId}`).once('value', (snap) => {
+                if (snap.exists()) {
+                    alert(`Hongera! Wewe na ${targetName} mmeendana! Mnaweza kuchat sasa.`);
+                    const matchId = [currentUser.id, targetId].sort().join('_');
+                    db.ref(`matches/${matchId}`).set({
+                        user1: currentUser.id,
+                        user2: targetId,
+                        names: { [currentUser.id]: currentUser.name, [targetId]: targetName },
+                        pics: { [currentUser.id]: currentUser.pic, [targetId]: targetPic }
+                    });
+                }
+            });
+
             currentIndex++;
-            loadProfileCard();
+            renderDiscoverCard();
         }
 
-        function likeAction() {
-            const p = sampleProfiles[currentIndex];
-            if (p.likesYou && !matches.some(m => m.id === p.id)) {
-                matches.push(p);
-                localStorage.setItem('zl_matches', JSON.stringify(matches));
-                document.getElementById('match-msg').innerText = `Wewe na ${p.name} mmeendana!`;
-                document.getElementById('matchModal').classList.remove('hidden');
-            }
-            currentIndex++;
-            loadProfileCard();
+        function listenToMatches() {
+            db.ref('matches').on('value', (snap) => {
+                const data = snap.val();
+                const container = document.getElementById('matches-list');
+                container.innerHTML = '';
+                let count = 0;
+                for (let mId in data) {
+                    const match = data[mId];
+                    if (match.user1 === currentUser.id || match.user2 === currentUser.id) {
+                        count++;
+                        const otherId = match.user1 === currentUser.id ? match.user2 : match.user1;
+                        const otherName = match.names[otherId];
+                        const otherPic = match.pics[otherId];
+
+                        container.innerHTML += `
+                            <div class="flex items-center space-x-3 p-3 bg-purple-50 rounded-2xl border border-purple-100">
+                                <img src="${otherPic}" class="w-12 h-12 rounded-full object-cover">
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-sm text-purple-950">${otherName}</h4>
+                                    <p class="text-[10px] text-green-600 font-semibold">Mmeendana!</p>
+                                </div>
+                                <button onclick="openChat('${mId}', '${otherName}')" class="bg-purple-700 text-white text-xs px-3 py-1.5 rounded-xl font-bold">
+                                    Chat
+                                </button>
+                            </div>
+                        `;
+                    }
+                }
+                if (count === 0) {
+                    container.innerHTML = `<p class="text-xs text-center text-gray-400 py-10">Bado huna mechi. Like watu zaidi kwenye 'Gundua'.</p>`;
+                }
+                lucide.createIcons();
+            });
         }
 
-        function closeMatchModal() {
-            document.getElementById('matchModal').classList.add('hidden');
-        }
+        let currentMatchId = null;
+        function openChat(matchId, partnerName) {
+            currentMatchId = matchId;
+            document.getElementById('chat-partner-name').innerText = partnerName;
+            document.getElementById('chatModal').classList.remove('hidden');
 
-        function updateLikesView() {
-            const likedList = sampleProfiles.filter(p => p.likesYou);
-            document.getElementById('likes-count-badge').innerText = `${likedList.length} Watu`;
-
-            const locked = document.getElementById('likes-locked-view');
-            const unlocked = document.getElementById('likes-unlocked-view');
-
-            if (isPremium) {
-                locked.classList.add('hidden');
-                unlocked.classList.remove('hidden');
-                unlocked.innerHTML = likedList.map(p => `
-                    <div class="bg-purple-50 rounded-2xl overflow-hidden border border-purple-100">
-                        <img src="${p.pic}" class="w-full h-32 object-cover">
-                        <div class="p-2">
-                            <div class="font-bold text-xs text-purple-950">${p.name}</div>
-                            <div class="text-[10px] text-gray-500">${p.location}</div>
+            db.ref(`messages/${matchId}`).on('value', (snap) => {
+                const box = document.getElementById('chat-messages');
+                box.innerHTML = '';
+                const msgs = snap.val();
+                for (let k in msgs) {
+                    const m = msgs[k];
+                    const isMe = m.sender === currentUser.id;
+                    box.innerHTML += `
+                        <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+                            <div class="${isMe ? 'bg-purple-700 text-white' : 'bg-gray-200 text-gray-800'} px-3 py-2 rounded-2xl max-w-[75%]">
+                                ${m.text}
+                            </div>
                         </div>
-                    </div>
-                `).join('');
-            } else {
-                locked.classList.remove('hidden');
-                unlocked.classList.add('hidden');
-            }
-        }
-
-        function updateMatchesView() {
-            const container = document.getElementById('matches-container');
-            if (matches.length === 0) {
-                container.innerHTML = `<p class="text-xs text-center text-gray-400 py-10">Bado huna mechi. Like watu zaidi kwenye 'Gundua'.</p>`;
-                return;
-            }
-            container.innerHTML = matches.map(m => `
-                <div class="flex items-center space-x-3 p-3 bg-purple-50 rounded-2xl border border-purple-100">
-                    <img src="${m.pic}" class="w-12 h-12 rounded-full object-cover">
-                    <div class="flex-1">
-                        <h4 class="font-bold text-sm text-purple-950">${m.name}</h4>
-                        <p class="text-[11px] text-gray-500">${m.location}</p>
-                    </div>
-                    <button onclick="alert('Soga inaanza punde...')" class="bg-purple-700 text-white text-xs px-3 py-1.5 rounded-xl font-semibold">Chat</button>
-                </div>
-            `).join('');
+                    `;
+                }
+                box.scrollTop = box.scrollHeight;
+            });
             lucide.createIcons();
         }
 
-        // Picha kutoka Gallery ya Android (FileReader)
-        function previewImage(event) {
-            const reader = new FileReader();
-            reader.onload = function() {
-                document.getElementById('my-pic-preview').src = reader.result;
-                myProfile.pic = reader.result;
-            }
-            if (event.target.files[0]) {
-                reader.readAsDataURL(event.target.target.files[0] || event.target.files[0]);
-            }
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text || !currentMatchId) return;
+
+            db.ref(`messages/${currentMatchId}`).push({
+                sender: currentUser.id,
+                text: text,
+                time: Date.now()
+            });
+            input.value = '';
         }
 
-        function openProfileModal() {
-            document.getElementById('profileModal').classList.remove('hidden');
+        function closeChat() {
+            document.getElementById('chatModal').classList.add('hidden');
+        }
+
+        function changeTab(t) {
+            ['discover', 'matches', 'premium'].forEach(s => {
+                document.getElementById(`screen-${s}`).classList.add('hidden');
+                document.getElementById(`nav-${s}`).classList.replace('text-purple-700', 'text-gray-400');
+            });
+            document.getElementById(`screen-${t}`).classList.remove('hidden');
+            document.getElementById(`nav-${t}`).classList.replace('text-gray-400', 'text-purple-700');
             lucide.createIcons();
         }
 
-        function closeProfileModal() {
-            document.getElementById('profileModal').classList.add('hidden');
-        }
-
-        function saveUserProfile() {
-            myProfile.name = document.getElementById('user-name').value;
-            myProfile.location = document.getElementById('user-loc').value;
-            myProfile.bio = document.getElementById('user-bio').value;
-            localStorage.setItem('zl_profile', JSON.stringify(myProfile));
-            closeProfileModal();
-            alert("Wasifu wako umehifadhiwa kikamilifu kwenye simu yako!");
-        }
-
-        // Thibitisha Malipo (Simulation)
-        function submitPayment() {
-            const code = document.getElementById('mpesa-code').value.trim();
-            if (code.length < 5) {
-                alert("Tafadhali weka nambari sahihi ya muamala uliotumiwa kwa SMS.");
-                return;
+        function logout() {
+            if (confirm("Unataka kutoka kwenye akaunti yako?")) {
+                localStorage.removeItem('zl_active_user');
+                location.reload();
             }
-            isPremium = true;
-            localStorage.setItem('zl_premium', JSON.stringify(true));
-            alert("Muamala umepokelewa! Umefunguliwa ZanziLove Premium kwa mwezi huu.");
-            changeTab('likes');
         }
     </script>
 </body>
-                                                                                                               </html>
-                                                                                                               
+</html>

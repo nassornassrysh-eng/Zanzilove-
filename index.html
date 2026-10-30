@@ -8,9 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Firebase SDK (Mawasiliano Mtandaoni) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -19,37 +16,38 @@
 </head>
 <body class="bg-gray-100 flex justify-center font-sans antialiased select-none">
 
-    <div class="w-full max-w-md bg-white min-h-screen flex flex-col justify-between shadow-2xl relative">
+    <div class="w-full max-w-md bg-white min-h-screen flex flex-col justify-between shadow-2xl relative overflow-hidden">
         
-        <!-- Header ya Juu -->
-        <header class="bg-purple-700 text-white px-5 py-3.5 flex justify-between items-center sticky top-0 z-40 shadow">
+        <!-- HEADER KUU YA JUU -->
+        <header id="main-header" class="bg-purple-700 text-white px-5 py-3.5 flex justify-between items-center sticky top-0 z-40 shadow">
             <div class="flex items-center space-x-2">
                 <i data-lucide="heart" class="w-6 h-6 text-pink-300 fill-pink-300"></i>
                 <h1 class="text-xl font-black tracking-wide">ZanziLove</h1>
             </div>
-            <button onclick="openRegistrationModal()" class="text-xs bg-purple-800 hover:bg-purple-900 px-3 py-1.5 rounded-full border border-purple-400 font-semibold">
-                Wasifu Wangu
+            <button onclick="openRegistrationModal()" class="text-xs bg-purple-800 hover:bg-purple-900 px-3 py-1.5 rounded-full border border-purple-400 font-semibold flex items-center space-x-1">
+                <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                <span id="header-user-name">Wasifu Wangu</span>
             </button>
         </header>
 
         <!-- SEHEMU KUU ZA APP -->
-        <main class="flex-1 p-4 overflow-y-auto no-scrollbar pb-24">
+        <main class="flex-1 p-4 overflow-y-auto no-scrollbar pb-24 relative">
 
             <!-- 1. GUNDUA (DISCOVER) -->
             <section id="screen-discover" class="space-y-4">
                 <div id="card-area">
-                    <!-- Kadi itaingizwa hapa na JavaScript -->
+                    <!-- Kadi itaingizwa na JS -->
                 </div>
             </section>
 
             <!-- 2. SOGA NA MECHI (CHAT LIST) -->
             <section id="screen-matches" class="hidden space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
-                    <h2 class="text-lg font-bold text-purple-950">Mazungumzo (Soga)</h2>
+                    <h2 class="text-lg font-bold text-purple-950">Mazungumzo Yako</h2>
                     <span id="chat-count-badge" class="bg-purple-100 text-purple-700 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
                 </div>
                 <div id="conversations-list" class="space-y-2">
-                    <!-- Watu wa kuchati nao wataingia hapa -->
+                    <!-- Orodha ya watu wa kuchati nao itaingizwa hapa -->
                 </div>
             </section>
 
@@ -73,10 +71,46 @@
                     </a>
                 </div>
             </section>
+
+            <!-- 4. DIRISHA LA NDANI LA CHAT (ACTIVE CHAT ROOM) -->
+            <section id="screen-chat" class="hidden fixed inset-0 bg-gray-50 z-50 flex flex-col max-w-md mx-auto">
+                <!-- Chat Header -->
+                <div class="bg-purple-700 text-white px-4 py-3 flex items-center justify-between shadow">
+                    <div class="flex items-center space-x-3">
+                        <button onclick="closeChatRoom()" class="hover:bg-purple-800 p-1.5 rounded-full transition">
+                            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                        </button>
+                        <img id="chat-user-img" src="" class="w-10 h-10 rounded-full object-cover border-2 border-white">
+                        <div>
+                            <h3 id="chat-user-name" class="font-bold text-sm leading-tight">Mtumiaji</h3>
+                            <span class="text-[10px] text-green-300 flex items-center">● Yupo hewani</span>
+                        </div>
+                    </div>
+                    <button onclick="alert('Simu ya sauti inakuja hivi karibuni!')" class="p-2 hover:bg-purple-800 rounded-full">
+                        <i data-lucide="phone" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Chat Messages Area -->
+                <div id="chat-messages-container" class="flex-1 p-4 overflow-y-auto space-y-3 bg-[#f3f4f9]">
+                    <!-- Ujumbe utawekwa hapa na JS -->
+                </div>
+
+                <!-- Chat Input Box -->
+                <div class="p-3 bg-white border-t flex items-center space-x-2">
+                    <input type="text" id="chat-input" placeholder="Andika ujumbe wako..." 
+                           class="flex-1 bg-gray-100 border border-gray-200 rounded-full px-4 py-2.5 text-sm focus:outline-purple-600"
+                           onkeypress="handleKeyPress(event)">
+                    <button onclick="sendChatMessage()" class="bg-purple-700 hover:bg-purple-800 text-white p-2.5 rounded-full shadow transition flex items-center justify-center">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </section>
+
         </main>
 
-        <!-- Menyu ya Chini ya Simu -->
-        <nav class="bg-white border-t border-purple-100 px-6 py-2 flex justify-around items-center fixed bottom-0 w-full max-w-md z-40">
+        <!-- MENYU YA CHINI YA SIMU -->
+        <nav id="bottom-nav" class="bg-white border-t border-purple-100 px-6 py-2 flex justify-around items-center fixed bottom-0 w-full max-w-md z-40">
             <button onclick="changeTab('discover')" id="nav-discover" class="flex flex-col items-center text-purple-700 font-bold">
                 <i data-lucide="flame" class="w-6 h-6"></i>
                 <span class="text-[10px] mt-1">Gundua</span>
@@ -91,26 +125,30 @@
             </button>
         </nav>
 
-        <!-- DIRISHA LA USAJILI WA LAZIMA (SIGN UP) -->
-        <div id="registerModal" class="hidden fixed inset-0 bg-purple-950/95 z-50 flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
+        <!-- DIRISHA LA USAJILI WA WASIFU (PROFILE MODAL) -->
+        <div id="registerModal" class="hidden fixed inset-0 bg-purple-950/80 z-50 flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl relative">
+                <button onclick="closeRegistrationModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+
                 <div class="text-center">
-                    <h3 class="text-xl font-black text-purple-950">Karibu ZanziLove! ❤️</h3>
-                    <p class="text-xs text-gray-500 mt-1">Jaza fomu hii kuanza kuona na kuchati na watu</p>
+                    <h3 class="text-xl font-black text-purple-950">Wasifu Wako ❤️</h3>
+                    <p class="text-xs text-gray-500 mt-1">Boresha taarifa zako ili uonekane na wengine</p>
                 </div>
 
                 <div class="text-center space-y-2">
                     <img id="reg-pic-preview" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-full mx-auto object-cover border-2 border-purple-600 shadow">
                     <label class="cursor-pointer bg-purple-100 text-purple-700 text-xs px-3 py-1.5 rounded-full font-bold inline-block hover:bg-purple-200">
-                        Weka Picha Yako
+                        Badili Picha
                         <input type="file" id="reg-pic-input" accept="image/*" class="hidden" onchange="processImageUpload(event)">
                     </label>
                 </div>
 
-                <div class="space-y-2 text-xs">
+                <div class="space-y-3 text-xs">
                     <div>
                         <label class="font-bold text-gray-700">Jina Lako na Umri</label>
-                        <input id="reg-name" placeholder="mf. Asha, 22" class="w-full border rounded-xl px-3 py-2 mt-0.5 focus:outline-purple-600" required>
+                        <input id="reg-name" placeholder="mf. Nassor, 24" class="w-full border rounded-xl px-3 py-2 mt-0.5 focus:outline-purple-600">
                     </div>
                     <div>
                         <label class="font-bold text-gray-700">Eneo Unapoishi</label>
@@ -125,8 +163,360 @@
                     </div>
                     <div>
                         <label class="font-bold text-gray-700">Kuhusu Wewe (Bio)</label>
-                        <textarea id="reg-bio" rows="2" placeholder="Unapenda nini?" class="w-full border rounded-xl px-3 py-2 mt-0.5 focus:outline-purple-600"></textarea>
+                        <textarea id="reg-bio" rows="2" placeholder="Mfano: Napenda kutembea ufukweni na kupiga stori nzuri..." class="w-full border rounded-xl px-3 py-2 mt-0.5 focus:outline-purple-600"></textarea>
                     </div>
                 </div>
 
-                <button onclick="saveRegistration()" c
+                <button onclick="saveRegistration()" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-2.5 rounded-xl text-sm transition">
+                    Hifadhi Taarifa
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT SYSTEM LOGIC -->
+    <script>
+        // Data za watumiaji wa mfano (Zanzibar Profiles)
+        const sampleProfiles = [
+            {
+                id: "user_1",
+                name: "Fatma, 21",
+                loc: "Stone Town, Zanzibar",
+                bio: "Napenda kuangalia sunset Forodhani na kusikiliza Taarab za zamani 🌅✨",
+                img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "user_2",
+                name: "Zuhura, 23",
+                loc: "Nungwi Beach, Zanzibar",
+                bio: "Mpenzi wa swimming, chakula cha baharini na safari za boti 🏖️⛵",
+                img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "user_3",
+                name: "Salim, 25",
+                loc: "Paje, Zanzibar",
+                bio: "Mfanyabiashara na mpishi mahiri wa Biriani ya Kizenji. Karibu tuchat!",
+                img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80"
+            }
+        ];
+
+        let currentCardIndex = 0;
+        let activeChatUser = null;
+
+        // Majibu ya mchezo (Automated bot simulation kwa mazungumzo hai)
+        const automatedReplies = [
+            "Mambo vipi! Habari yako? 😊",
+            "Niko Stone Town sasa hivi, wewe uko wapi?",
+            "Asante kwa kunitafuta, unaonekana mtu poa sana!",
+            "Haha kweli kabisa! Napenda sana watu wacheshi 😂",
+            "Mimi niko free jioni hii, tutapata kahawa Forodhani?",
+            "Penzi la Zanzibar halina mfano kabisa ❤️"
+        ];
+
+        // Pakia data mwanzo
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadUserProfile();
+            renderCard();
+            renderConversationsList();
+        });
+
+        // 1. MFUMO WA TABS (NAVIGATION)
+        function changeTab(tabName) {
+            document.getElementById('screen-discover').classList.add('hidden');
+            document.getElementById('screen-matches').classList.add('hidden');
+            document.getElementById('screen-premium').classList.add('hidden');
+
+            document.getElementById('nav-discover').className = "flex flex-col items-center text-gray-400";
+            document.getElementById('nav-matches').className = "flex flex-col items-center text-gray-400";
+            document.getElementById('nav-premium').className = "flex flex-col items-center text-gray-400";
+
+            if (tabName === 'discover') {
+                document.getElementById('screen-discover').classList.remove('hidden');
+                document.getElementById('nav-discover').className = "flex flex-col items-center text-purple-700 font-bold";
+            } else if (tabName === 'matches') {
+                document.getElementById('screen-matches').classList.remove('hidden');
+                document.getElementById('nav-matches').className = "flex flex-col items-center text-purple-700 font-bold";
+                renderConversationsList();
+            } else if (tabName === 'premium') {
+                document.getElementById('screen-premium').classList.remove('hidden');
+                document.getElementById('nav-premium').className = "flex flex-col items-center text-yellow-600 font-bold";
+            }
+            lucide.createIcons();
+        }
+
+        // 2. DISCOVER & SWIPE CARD
+        function renderCard() {
+            const container = document.getElementById('card-area');
+            if (currentCardIndex >= sampleProfiles.length) {
+                container.innerHTML = `
+                    <div class="text-center py-20 space-y-4">
+                        <i data-lucide="check-circle" class="w-16 h-16 text-purple-500 mx-auto"></i>
+                        <h3 class="text-lg font-bold text-gray-800">Umemaliza kuona watu wote kwa sasa!</h3>
+                        <p class="text-xs text-gray-500">Rudi baadaye au anza kuchati na watu uliowapenda kwenye soga.</p>
+                        <button onclick="currentCardIndex=0; renderCard();" class="text-xs bg-purple-700 text-white px-4 py-2 rounded-full font-bold">Anza Upya</button>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            const p = sampleProfiles[currentCardIndex];
+            container.innerHTML = `
+                <div class="relative bg-white rounded-3xl overflow-hidden shadow-lg border border-gray-100">
+                    <img src="${p.img}" class="w-full h-96 object-cover">
+                    <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-5 text-white">
+                        <h2 class="text-2xl font-black">${p.name}</h2>
+                        <p class="text-xs text-purple-200 flex items-center mt-1">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5 mr-1"></i> ${p.loc}
+                        </p>
+                        <p class="text-xs text-gray-200 mt-2 line-clamp-2">${p.bio}</p>
+                    </div>
+                </div>
+
+                <!-- Vitufe vya Kupenda au Kupita -->
+                <div class="flex justify-center items-center space-x-6 mt-4">
+                    <button onclick="nextProfile(false)" class="w-14 h-14 bg-white border-2 border-red-500 text-red-500 rounded-full flex items-center justify-center shadow-md hover:bg-red-50 transition active:scale-95">
+                        <i data-lucide="x" class="w-7 h-7"></i>
+                    </button>
+                    <button onclick="startChatDirectly('${p.id}')" class="w-16 h-16 bg-purple-700 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-purple-800 transition active:scale-95">
+                        <i data-lucide="message-circle" class="w-8 h-8 fill-white"></i>
+                    </button>
+                    <button onclick="nextProfile(true)" class="w-14 h-14 bg-white border-2 border-green-500 text-green-500 rounded-full flex items-center justify-center shadow-md hover:bg-green-50 transition active:scale-95">
+                        <i data-lucide="heart" class="w-7 h-7"></i>
+                    </button>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function nextProfile(liked) {
+            if (liked) {
+                // Kama amependa, hifadhi kama chat mpya
+                const p = sampleProfiles[currentCardIndex];
+                saveInitialConversation(p);
+            }
+            currentCardIndex++;
+            renderCard();
+        }
+
+        function startChatDirectly(userId) {
+            const p = sampleProfiles.find(item => item.id === userId);
+            if (p) {
+                saveInitialConversation(p);
+                openChatRoom(p);
+            }
+        }
+
+        // 3. HIFADHI NA FUNGUA MAZUNGUMZO
+        function getSavedChats() {
+            return JSON.parse(localStorage.getItem('zanzilove_chats') || '{}');
+        }
+
+        function saveInitialConversation(profile) {
+            let chats = getSavedChats();
+            if (!chats[profile.id]) {
+                chats[profile.id] = {
+                    user: profile,
+                    messages: [
+                        { sender: 'them', text: `Habari! Nimefurahi kukuona kwenye ZanziLove ❤️`, time: getCurrentTime() }
+                    ]
+                };
+                localStorage.setItem('zanzilove_chats', JSON.stringify(chats));
+            }
+        }
+
+        function renderConversationsList() {
+            const chats = getSavedChats();
+            const listEl = document.getElementById('conversations-list');
+            const keys = Object.keys(chats);
+
+            document.getElementById('chat-count-badge').innerText = keys.length;
+
+            if (keys.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-12 text-gray-400 space-y-2">
+                        <i data-lucide="message-square" class="w-10 h-10 mx-auto text-gray-300"></i>
+                        <p class="text-xs">Bado huna soga yoyote.<br>Nenda kwenye "Gundua" upende kadi za watu!</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            listEl.innerHTML = keys.map(id => {
+                const item = chats[id];
+                const lastMsg = item.messages[item.messages.length - 1];
+                return `
+                    <div onclick='openChatRoomById("${id}")' class="flex items-center space-x-3 p-3 bg-gray-50 hover:bg-purple-50 rounded-2xl cursor-pointer transition border border-gray-100">
+                        <img src="${item.user.img}" class="w-12 h-12 rounded-full object-cover border border-purple-300">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-bold text-sm text-gray-800 truncate">${item.user.name}</h4>
+                                <span class="text-[10px] text-gray-400">${lastMsg ? lastMsg.time : ''}</span>
+                            </div>
+                            <p class="text-xs text-gray-500 truncate mt-0.5">${lastMsg ? lastMsg.text : 'Anza mazungumzo...'}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function openChatRoomById(id) {
+            const chats = getSavedChats();
+            if (chats[id]) {
+                openChatRoom(chats[id].user);
+            }
+        }
+
+        // 4. NDANI YA CHAT ROOM
+        function openChatRoom(user) {
+            activeChatUser = user;
+            document.getElementById('chat-user-name').innerText = user.name;
+            document.getElementById('chat-user-img').src = user.img;
+            document.getElementById('screen-chat').classList.remove('hidden');
+            renderMessages();
+            lucide.createIcons();
+        }
+
+        function closeChatRoom() {
+            activeChatUser = null;
+            document.getElementById('screen-chat').classList.add('hidden');
+            renderConversationsList();
+        }
+
+        function renderMessages() {
+            if (!activeChatUser) return;
+            const container = document.getElementById('chat-messages-container');
+            const chats = getSavedChats();
+            const conversation = chats[activeChatUser.id] || { messages: [] };
+
+            container.innerHTML = conversation.messages.map(m => {
+                const isMe = m.sender === 'me';
+                return `
+                    <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+                        <div class="max-w-[75%] rounded-2xl px-4 py-2.5 text-xs shadow-sm ${
+                            isMe ? 'bg-purple-700 text-white rounded-br-none' : 'bg-white text-gray-800 border rounded-bl-none'
+                        }">
+                            <p>${m.text}</p>
+                            <span class="text-[9px] block text-right mt-1 ${isMe ? 'text-purple-200' : 'text-gray-400'}">${m.time}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Scroll down
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text || !activeChatUser) return;
+
+            let chats = getSavedChats();
+            if (!chats[activeChatUser.id]) {
+                chats[activeChatUser.id] = { user: activeChatUser, messages: [] };
+            }
+
+            // Weka meseji yangu
+            chats[activeChatUser.id].messages.push({
+                sender: 'me',
+                text: text,
+                time: getCurrentTime()
+            });
+
+            localStorage.setItem('zanzilove_chats', JSON.stringify(chats));
+            input.value = '';
+            renderMessages();
+
+            // Pata jibu la moja kwa moja la mfano (simulation) baada ya sekunde 1
+            setTimeout(() => {
+                simulateReply(activeChatUser.id);
+            }, 1200);
+        }
+
+        function simulateReply(userId) {
+            let chats = getSavedChats();
+            if (!chats[userId]) return;
+
+            const randomReply = automatedReplies[Math.floor(Math.random() * automatedReplies.length)];
+            chats[userId].messages.push({
+                sender: 'them',
+                text: randomReply,
+                time: getCurrentTime()
+            });
+
+            localStorage.setItem('zanzilove_chats', JSON.stringify(chats));
+            if (activeChatUser && activeChatUser.id === userId) {
+                renderMessages();
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        function getCurrentTime() {
+            const d = new Date();
+            return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+        }
+
+        // 5. USAJILI NA WASIFU
+        function openRegistrationModal() {
+            document.getElementById('registerModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeRegistrationModal() {
+            document.getElementById('registerModal').classList.add('hidden');
+        }
+
+        function processImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('reg-pic-preview').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveRegistration() {
+            const name = document.getElementById('reg-name').value.trim();
+            const loc = document.getElementById('reg-loc').value;
+            const bio = document.getElementById('reg-bio').value.trim();
+            const pic = document.getElementById('reg-pic-preview').src;
+
+            if (!name) {
+                alert('Tafadhali weka jina lako!');
+                return;
+            }
+
+            const userData = { name, loc, bio, pic };
+            localStorage.setItem('zanzi_current_user', JSON.stringify(userData));
+            loadUserProfile();
+            closeRegistrationModal();
+            alert('Wasifu wako umehifadhiwa kikamilifu!');
+        }
+
+        function loadUserProfile() {
+            const saved = localStorage.getItem('zanzi_current_user');
+            if (saved) {
+                const user = JSON.parse(saved);
+                document.getElementById('header-user-name').innerText = user.name.split(',')[0];
+                document.getElementById('reg-name').value = user.name || '';
+                document.getElementById('reg-loc').value = user.loc || 'Stone Town, Zanzibar';
+                document.getElementById('reg-bio').value = user.bio || '';
+                if (user.pic) document.getElementById('reg-pic-preview').src = user.pic;
+            }
+        }
+    </script>
+</body>
+</html>

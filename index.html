@@ -501,3 +501,196 @@
     </script>
 </body>
 </html>
+
+CREATE TABLE public.profiles (
+  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  display_name text NOT NULL,
+  birthdate date NOT NULL,
+  gender text NOT NULL CHECK (gender IN ('mwanamume','mwanamke')),
+  seeking text NOT NULL DEFAULT 'wote' CHECK (seeking IN ('mwanamume','mwanamke','wote')),
+  location text NOT NULL,
+  bio text DEFAULT '',
+  interests text[] NOT NULL DEFAULT '{}',
+  goal text NOT NULL DEFAULT 'urafiki',
+  photos text[] NOT NULL DEFAULT '{}',
+  visibility text NOT NULL DEFAULT 'everyone' CHECK (visibility IN ('everyone','matches','hidden')),
+  show_age boolean NOT NULL DEFAULT true,
+  verification_status text NOT NULL DEFAULT 'none' CHECK (verification_status IN ('none','pending','verified','rejected')),
+  verification_photo text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO authenticated;
+GRANT ALL ON public.profiles TO service_role;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE public.likes (
+  from_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  to_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  is_like boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (from_id, to_id),
+  CHECK (from_id <> to_id)
+);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.likes TO authenticated;
+GRANT ALL ON public.likes TO service_role;
+ALTER TABLE public.likes ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE public.matches (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_a uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_b uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (user_a, user_b),
+  CHECK (user_a < user_b)
+);
+GRANT SELECT, DELETE ON public.matches TO authenticated;
+GRANT ALL ON public.matches TO service_role;
+ALTER TABLE public.matches ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE public.messages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  match_id uuid NOT NULL REFERENCES public.matches(id) ON DELETE CASCADE,
+  sender_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  body text NOT NULL CHECK (char_length(body) BETWEEN 1 AND 2000),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX ON public.messages(match_id, created_at);
+GRANT SELECT, INSERT ON public.messages TO authenticated;
+GRANT ALL ON public.messages TO service_role;
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE public.blocks (
+  blocker_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  blocked_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (blocker_id, blocked_id)
+);
+GRANT SELECT, INSERT, DELETE ON public.blocks TO authenticated;
+GRANT ALL ON public.blocks TO service_role;
+ALTER TABLE public.blocks ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE public.reports (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  reporter_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  reported_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  reason text NOT NULL,
+  details text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+GRANT INSERT ON public.reports TO authenticated;
+GRANT ALL ON public.reports TO service_role;
+ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
+
+-- helpers
+CREATE OR REPLACE FUNCTION public.is_blocked_between(a uuid, b uuid) RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (SELECT 1 FROM blocks WHERE (blocker_id=a AND blocked_id=b) OR (blocker_id=b AND blocked_id=a))
+$$;
+CREATE OR REPLACE FUNCTION public.is_matched(a uuid, b uuid) RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (SELECT 1 FROM matches WHERE user_a=LEAST(a,b) AND user_b=GREATEST(a,b))
+$$;
+CREATE OR REPLACE FUNCTION public.liked_me(viewer uuid, owner uuid) RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (SELECT 1 FROM likes WHERE from_id=owner AND to_id=viewer AND is_like)
+$$;
+
+-- profiles policies
+CREATE POLICY "own profile read" ON public.profiles FOR SELECT TO authenticated USING (id = auth.uid());
+CREATE POLICY "others visible" ON public.profiles FOR SELECT TO authenticated USING (
+  id <> auth.uid() AND NOT public.is_blocked_between(auth.uid(), id) AND (
+    visibility = 'everyone'
+    OR (visibility = 'matches' AND (public.is_matched(auth.uid(), id) OR public.liked_me(auth.uid(), id)))
+    OR (visibility = 'hidden' AND public.is_matched(auth.uid(), id))
+  )
+);
+CREATE POLICY "own profile insert" ON public.profiles FOR INSERT TO authenticated WITH CHECK (id = auth.uid());
+CREATE POLICY "own profile update" ON public.profiles FOR UPDATE TO authenticated USING (id = auth.uid()) WITH CHECK (id = auth.uid());
+CREATE POLICY "own profile delete" ON public.profiles FOR DELETE TO authenticated USING (id = auth.uid());
+
+-- profile validation: 18+, users cannot self-verify
+CREATE OR REPLACE FUNCTION public.profiles_guard() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF NEW.birthdate > (current_date - interval '18 years') THEN
+    RAISE EXCEPTION 'Lazima uwe na umri wa miaka 18 au zaidi';
+  END IF;
+  IF current_setting('request.jwt.claim.role', true) = 'authenticated'
+     OR coalesce((current_setting('request.jwt.claims', true)::jsonb ->> 'role'),'') = 'authenticated' THEN
+    IF TG_OP = 'INSERT' THEN
+      NEW.verification_status := CASE WHEN NEW.verification_photo IS NOT NULL THEN 'pending' ELSE 'none' END;
+    ELSE
+      IF NEW.verification_status <> OLD.verification_status AND NOT (NEW.verification_status = 'pending' AND OLD.verification_status IN ('none','rejected')) THEN
+        NEW.verification_status := OLD.verification_status;
+      END IF;
+      IF NEW.verification_photo IS DISTINCT FROM OLD.verification_photo AND OLD.verification_status = 'verified' THEN
+        NEW.verification_photo := OLD.verification_photo;
+      END IF;
+    END IF;
+  END IF;
+  NEW.updated_at := now();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER profiles_guard BEFORE INSERT OR UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.profiles_guard();
+
+-- likes policies
+CREATE POLICY "read own likes" ON public.likes FOR SELECT TO authenticated USING (from_id = auth.uid() OR (to_id = auth.uid() AND is_like));
+CREATE POLICY "insert own likes" ON public.likes FOR INSERT TO authenticated WITH CHECK (from_id = auth.uid() AND NOT public.is_blocked_between(from_id, to_id));
+CREATE POLICY "update own likes" ON public.likes FOR UPDATE TO authenticated USING (from_id = auth.uid()) WITH CHECK (from_id = auth.uid());
+CREATE POLICY "delete own likes" ON public.likes FOR DELETE TO authenticated USING (from_id = auth.uid());
+
+-- auto-match on mutual like
+CREATE OR REPLACE FUNCTION public.handle_like() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF NEW.is_like AND EXISTS (SELECT 1 FROM likes WHERE from_id = NEW.to_id AND to_id = NEW.from_id AND is_like) THEN
+    INSERT INTO matches(user_a, user_b) VALUES (LEAST(NEW.from_id, NEW.to_id), GREATEST(NEW.from_id, NEW.to_id))
+    ON CONFLICT DO NOTHING;
+  END IF;
+  RETURN NEW;
+END $$;
+CREATE TRIGGER likes_match AFTER INSERT OR UPDATE ON public.likes FOR EACH ROW EXECUTE FUNCTION public.handle_like();
+
+-- matches policies
+CREATE POLICY "read own matches" ON public.matches FOR SELECT TO authenticated USING (auth.uid() IN (user_a, user_b));
+CREATE POLICY "unmatch" ON public.matches FOR DELETE TO authenticated USING (auth.uid() IN (user_a, user_b));
+
+-- on unmatch, remove likes so they don't rematch automatically
+CREATE OR REPLACE FUNCTION public.handle_unmatch() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  DELETE FROM likes WHERE (from_id=OLD.user_a AND to_id=OLD.user_b) OR (from_id=OLD.user_b AND to_id=OLD.user_a);
+  INSERT INTO likes(from_id,to_id,is_like) VALUES (OLD.user_a,OLD.user_b,false),(OLD.user_b,OLD.user_a,false) ON CONFLICT DO NOTHING;
+  RETURN OLD;
+END $$;
+CREATE TRIGGER matches_unmatch AFTER DELETE ON public.matches FOR EACH ROW EXECUTE FUNCTION public.handle_unmatch();
+
+-- messages policies
+CREATE POLICY "read match messages" ON public.messages FOR SELECT TO authenticated USING (
+  EXISTS (SELECT 1 FROM matches m WHERE m.id = match_id AND auth.uid() IN (m.user_a, m.user_b))
+);
+CREATE POLICY "send match messages" ON public.messages FOR INSERT TO authenticated WITH CHECK (
+  sender_id = auth.uid() AND EXISTS (
+    SELECT 1 FROM matches m WHERE m.id = match_id AND auth.uid() IN (m.user_a, m.user_b)
+      AND NOT public.is_blocked_between(m.user_a, m.user_b)
+  )
+);
+
+-- blocks: blocking also removes match
+CREATE POLICY "read own blocks" ON public.blocks FOR SELECT TO authenticated USING (blocker_id = auth.uid());
+CREATE POLICY "insert own blocks" ON public.blocks FOR INSERT TO authenticated WITH CHECK (blocker_id = auth.uid());
+CREATE POLICY "delete own blocks" ON public.blocks FOR DELETE TO authenticated USING (blocker_id = auth.uid());
+CREATE OR REPLACE FUNCTION public.handle_block() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  DELETE FROM matches WHERE user_a = LEAST(NEW.blocker_id, NEW.blocked_id) AND user_b = GREATEST(NEW.blocker_id, NEW.blocked_id);
+  RETURN NEW;
+END $$;
+CREATE TRIGGER blocks_unmatch AFTER INSERT ON public.blocks FOR EACH ROW EXECUTE FUNCTION public.handle_block();
+
+-- reports
+CREATE POLICY "file report" ON public.reports FOR INSERT TO authenticated WITH CHECK (reporter_id = auth.uid());
+
+ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.matches;

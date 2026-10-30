@@ -43,7 +43,7 @@
                 <div id="card-area">
                     <div class="text-center py-20 text-gray-400">
                         <div class="animate-spin inline-block w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full mb-2"></div>
-                        <p class="text-xs">Inapakia watu walio karibu...</p>
+                        <p class="text-xs">Inatafuta watu waliopo mtandaoni...</p>
                     </div>
                 </div>
             </section>
@@ -55,7 +55,7 @@
                     <span id="chat-count-badge" class="bg-purple-100 text-purple-700 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
                 </div>
                 <div id="conversations-list" class="space-y-2">
-                    <!-- Orodha ya soga itaingia hapa -->
+                    <!-- Orodha ya soga itaingizwa hapa -->
                 </div>
             </section>
 
@@ -149,7 +149,7 @@
                 <div class="space-y-3 text-xs">
                     <div>
                         <label class="font-bold text-gray-700">Jina Lako na Umri</label>
-                        <input id="reg-name" placeholder="mf. Fatma, 22" class="w-full border rounded-xl px-3 py-2 mt-0.5 focus:outline-purple-600">
+                        <input id="reg-name" placeholder="mf. Nassor, 24" class="w-full border rounded-xl px-3 py-2 mt-0.5 focus:outline-purple-600">
                     </div>
                     <div>
                         <label class="font-bold text-gray-700">Eneo Unapoishi</label>
@@ -179,28 +179,23 @@
     <!-- JAVASCRIPT & FIREBASE LOGIC -->
     <script>
         // ========================================================
-        // 1. WEKA FIREBASE CONFIG YAKO HAPA KUTOKA GOOGLE CONSOLE
+        // KODI ZAKO HALISI ZA FIREBASE (ZIMESHAPANGWA TAYARI)
         // ========================================================
         const firebaseConfig = {
-            apiKey: "WEKA_API_KEY_YAKO",
-            authDomain: "zanzilove-demo.firebaseapp.com",
-            databaseURL: "https://zanzilove-demo-default-rtdb.firebaseio.com",
-            projectId: "zanzilove-demo",
-            storageBucket: "zanzilove-demo.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdef"
+            apiKey: "AIzaSyCHWrqd4IPQbXQCBYcq_niS-dTpW_c0_Ys",
+            authDomain: "zanzilove-91429.firebaseapp.com",
+            databaseURL: "https://zanzilove-91429-default-rtdb.firebaseio.com",
+            projectId: "zanzilove-91429",
+            storageBucket: "zanzilove-91429.firebasestorage.app",
+            messagingSenderId: "228033764997",
+            appId: "1:228033764997:web:8e915d9e766e31e86053ec",
+            measurementId: "G-4BRYQCE341"
         };
 
         // Initialize Firebase
-        let db = null;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
-        } catch (e) {
-            console.warn("Weka firebaseConfig yako ili watu waweze kuchati!");
-        }
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        // Current User Info
         let myUserId = localStorage.getItem('zanzi_my_id');
         let myUserProfile = JSON.parse(localStorage.getItem('zanzi_my_profile') || 'null');
 
@@ -232,10 +227,9 @@
             }
         }
 
-        // App Launch
+        // Start App
         function startApp() {
             if (!myUserId || !myUserProfile) {
-                // Kama hajasajiliwa bado, lazimisha dirisha la usajili
                 openRegistrationModal();
             } else {
                 document.getElementById('header-user-name').innerText = myUserProfile.name.split(',')[0];
@@ -243,15 +237,13 @@
             fetchLiveUsers();
         }
 
-        // 2. FETCH REAL USERS FROM FIREBASE
+        // FETCH REAL USERS FROM DATABASE
         function fetchLiveUsers() {
-            if (!db) return;
             db.ref('users').on('value', (snapshot) => {
                 const data = snapshot.val();
                 allOnlineUsers = [];
                 if (data) {
                     Object.keys(data).forEach(id => {
-                        // Usijionyeshe wewe mwenyewe kwenye orodha ya kutafuta penzi
                         if (id !== myUserId) {
                             allOnlineUsers.push({ id, ...data[id] });
                         }
@@ -261,14 +253,14 @@
             });
         }
 
-        // 3. RENDER CARD
+        // RENDER CARD
         function renderCard() {
             const container = document.getElementById('card-area');
             if (allOnlineUsers.length === 0 || currentCardIndex >= allOnlineUsers.length) {
                 container.innerHTML = `
                     <div class="text-center py-20 space-y-4">
                         <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">✓</div>
-                        <h3 class="text-lg font-bold text-gray-800">Hakuna mtu mwingine kwa sasa!</h3>
+                        <h3 class="text-lg font-bold text-gray-800">Hakuna mtu mwingine mpya kwa sasa!</h3>
                         <p class="text-xs text-gray-500 px-4">Watu wapya wakijisajili kwenye app wataonekana hapa papo hapo.</p>
                         <button onclick="currentCardIndex=0; renderCard();" class="text-xs bg-purple-700 text-white px-5 py-2.5 rounded-full font-bold shadow">Angalia Upya</button>
                     </div>
@@ -306,7 +298,7 @@
             renderCard();
         }
 
-        // 4. REALTIME CHAT ROOM
+        // REALTIME CHAT ROOM
         function getChatRoomId(uid1, uid2) {
             return [uid1, uid2].sort().join('_');
         }
@@ -329,7 +321,7 @@
         }
 
         function closeChatRoom() {
-            if (currentChatListener && db) {
+            if (currentChatListener) {
                 const roomId = getChatRoomId(myUserId, activeChatPartner.id);
                 db.ref(`chats/${roomId}/messages`).off('value', currentChatListener);
             }
@@ -338,7 +330,7 @@
         }
 
         function listenToLiveMessages() {
-            if (!db || !activeChatPartner) return;
+            if (!activeChatPartner) return;
             const roomId = getChatRoomId(myUserId, activeChatPartner.id);
             const container = document.getElementById('chat-messages-container');
 
@@ -367,13 +359,13 @@
         function sendLiveMessage() {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
-            if (!text || !activeChatPartner || !db) return;
+            if (!text || !activeChatPartner) return;
 
             const roomId = getChatRoomId(myUserId, activeChatPartner.id);
             const d = new Date();
             const time = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
 
-            // Hifadhi meseji kwenye Firebase
+            // Hifadhi meseji
             db.ref(`chats/${roomId}/messages`).push({
                 senderId: myUserId,
                 text: text,
@@ -381,7 +373,7 @@
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             });
 
-            // Sasisha orodha ya soga za karibuni
+            // Sasisha orodha ya soga
             db.ref(`user_chats/${myUserId}/${activeChatPartner.id}`).set({
                 lastMsg: text,
                 time: time,
@@ -400,9 +392,9 @@
             if (e.key === 'Enter') sendLiveMessage();
         }
 
-        // 5. LOAD RECENT CHATS LIST
+        // LOAD RECENT CHATS LIST
         function loadRecentChats() {
-            if (!db || !myUserId) return;
+            if (!myUserId) return;
             db.ref(`user_chats/${myUserId}`).on('value', (snapshot) => {
                 const data = snapshot.val();
                 const listEl = document.getElementById('conversations-list');
@@ -440,7 +432,7 @@
             });
         }
 
-        // 6. USAJILI WA WATU HALISI (REAL USER SIGN UP)
+        // USAJILI WA WATU HALISI (SIGN UP)
         function openRegistrationModal() {
             document.getElementById('registerModal').classList.remove('hidden');
         }
@@ -458,7 +450,16 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById('reg-pic-preview').src = e.target.result;
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = 300;
+                        canvas.height = (img.height / img.width) * 300;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        document.getElementById('reg-pic-preview').src = canvas.toDataURL('image/jpeg', 0.7);
+                    };
                 };
                 reader.readAsDataURL(file);
             }
@@ -484,22 +485,18 @@
             localStorage.setItem('zanzi_my_profile', JSON.stringify(profileData));
             myUserProfile = profileData;
 
-            // Hifadhi kwenye Firebase mtandaoni
-            if (db) {
-                db.ref(`users/${myUserId}`).set(profileData).then(() => {
-                    document.getElementById('header-user-name').innerText = name.split(',')[0];
-                    document.getElementById('registerModal').classList.add('hidden');
-                    alert('Umefanikiwa kujisajili ZanziLove!');
-                    fetchLiveUsers();
-                });
-            } else {
+            // Tuma moja kwa moja kwenye Firebase Database
+            db.ref(`users/${myUserId}`).set(profileData).then(() => {
                 document.getElementById('header-user-name').innerText = name.split(',')[0];
                 document.getElementById('registerModal').classList.add('hidden');
-                alert('Umefanikiwa! Kumbuka kuweka Firebase config yako kwenye kodi.');
-            }
+                alert('Hongera! Umejisajili kikamilifu ZanziLove!');
+                fetchLiveUsers();
+            }).catch(err => {
+                alert("Hitilafu: Hakikisha umewasha 'Realtime Database' kwenye Firebase!");
+            });
         }
 
-        // Run app
+        // WASHA APP
         startApp();
     </script>
 </body>
